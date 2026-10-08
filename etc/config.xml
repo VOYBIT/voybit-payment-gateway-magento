@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <payment>
+            <voybit>
+                <active>0</active>
+                <model>Voybit\PaymentGateway\Magento\Model\Payment\Voybit</model>
+                <title>Voybit</title>
+                <order_status>pending_payment</order_status>
+                <group>voybit</group>
+                <allowspecific>0</allowspecific>
+            </voybit>
+        </payment>
+    </default>
+</config>

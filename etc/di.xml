@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Checkout\Model\CompositeConfigProvider">
+        <arguments>
+            <argument name="configProviders" xsi:type="array">
+                <item name="voybit_payment_gateway" xsi:type="object">Voybit\PaymentGateway\Magento\Model\ConfigProvider</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Framework\App\Request\CsrfValidator">
+        <plugin name="voybit_payment_gateway_csrf_skip" type="Voybit\PaymentGateway\Magento\Plugin\CsrfValidatorSkip"/>
+    </type>
+</config>
