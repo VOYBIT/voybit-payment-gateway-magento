@@ -22,7 +22,7 @@ final class WebhookDecision
         if ($link === null) {
             return self::RETRY;
         }
-        $publicId = (string) ($event['public_id'] ?? '');
+        $publicId = (string) ($event['checkout_public_id'] ?? $event['public_id'] ?? '');
         $stored = (string) $link['public_id'];
         if ($publicId === '' || strlen($publicId) !== strlen($stored) || !hash_equals($stored, $publicId)) {
             return self::REJECT;

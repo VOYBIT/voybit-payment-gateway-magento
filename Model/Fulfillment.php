@@ -26,6 +26,11 @@ class Fulfillment
     public function accept(string $webhookId, array $event): int
     {
         $paymentId = strtolower((string) ($event['payment_id'] ?? ''));
+        $sessionId = strtolower((string) (
+            $event['checkout_session_id']
+            ?? $event['session_id']
+            ?? ''
+        ));
         if (
             !preg_match('/^[A-Za-z0-9._:-]{8,64}$/', $webhookId)
             || !preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/', $paymentId)
@@ -39,7 +44,10 @@ class Fulfillment
             if ($this->links->seen($webhookId)) {
                 return 204;
             }
-            $link = $this->links->forPayment($paymentId);
+            $lookupId = preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/', $sessionId)
+                ? $sessionId
+                : $paymentId;
+            $link = $this->links->forPayment($lookupId);
             $decision = WebhookDecision::forEvent($event, $link);
             if ($decision === WebhookDecision::RETRY) {
                 return 503;
@@ -52,6 +60,8 @@ class Fulfillment
             if ($decision === WebhookDecision::FULFIL && $link !== null) {
                 $order = $this->orders->get($link['order_id']);
                 if ($order->getPayment() !== null && $order->getPayment()->getMethod() === 'voybit') {
+                    $order->getPayment()->setAdditionalInformation('voybit_payment_id', $paymentId);
+                    $order->getPayment()->setTransactionId($paymentId);
                     $this->invoice($order);
                 }
             }

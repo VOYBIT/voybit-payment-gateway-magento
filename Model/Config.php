@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Voybit\PaymentGateway\Magento\Model;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\Config\Storage\WriterInterface;
+use Magento\Framework\App\Config\ReinitableConfigInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Store\Model\ScopeInterface;
 
@@ -12,16 +14,16 @@ class Config
 {
     public function __construct(
         private ScopeConfigInterface $scopeConfig,
-        private EncryptorInterface $encryptor
+        private EncryptorInterface $encryptor,
+        private WriterInterface $writer,
+        private ReinitableConfigInterface $reinitableConfig
     ) {
     }
 
     public function isReady(?int $storeId): bool
     {
         return $this->isActive($storeId)
-            && $this->apiKey($storeId) !== ''
-            && $this->webhookSecret($storeId) !== ''
-            && $this->assetId($storeId) !== '';
+            && $this->apiKey($storeId) !== '';
     }
 
     public function isActive(?int $storeId): bool
@@ -45,16 +47,19 @@ class Config
         return $this->secret('payment/voybit/webhook_secret', $storeId);
     }
 
-    public function assetId(?int $storeId): string
+    public function saveWebhookSecret(int $storeId, string $secret): void
     {
-        $value = strtolower(trim((string) $this->scopeConfig->getValue(
-            'payment/voybit/asset_id',
-            ScopeInterface::SCOPE_STORE,
+        $secret = trim($secret);
+        if (!preg_match('/^[A-Za-z0-9._:-]{8,256}$/', $secret)) {
+            throw new \InvalidArgumentException('Voybit returned an invalid webhook secret.');
+        }
+        $this->writer->save(
+            'payment/voybit/webhook_secret',
+            $this->encryptor->encrypt($secret),
+            ScopeInterface::SCOPE_STORES,
             $storeId
-        )));
-        return preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/', $value) === 1
-            ? $value
-            : '';
+        );
+        $this->reinitableConfig->reinit();
     }
 
     private function secret(string $path, ?int $storeId): string

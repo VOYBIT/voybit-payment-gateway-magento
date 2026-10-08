@@ -15,7 +15,7 @@ final class OrderAmount
 
     private const MAX_MINOR = 9000000000000000;
 
-    /** @return array{amount_minor: int, crypto_amount: string, fiat_currency: string} */
+    /** @return array{fiat_amount: string, fiat_currency: string} */
     public static function from(string $amount, string $currency): array
     {
         $currency = strtoupper(trim($currency));
@@ -42,8 +42,7 @@ final class OrderAmount
             throw new \InvalidArgumentException('order total is not a valid amount');
         }
         return [
-            'amount_minor' => (int) $minor,
-            'crypto_amount' => $exponent === 0 ? $whole : $whole . '.' . $fraction,
+            'fiat_amount' => $exponent === 0 ? $whole : $whole . '.' . $fraction,
             'fiat_currency' => $currency,
         ];
     }

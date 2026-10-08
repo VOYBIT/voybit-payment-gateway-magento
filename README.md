@@ -3,10 +3,10 @@
 ## Get an API key
 
 1. Create an account at [dashboard.voybit.com](https://dashboard.voybit.com).
-2. Open **Gateways** and create a payment gateway. Keep it enabled. Copy the asset ID you will charge, and store the webhook secret (`whsec_…`) shown once at creation.
+2. Open **Gateways**, create a payment gateway, and enable every asset and network customers may choose.
 3. Open **API keys**, choose **Create secret key**, and bind it to that gateway. Copy the full `vb_live_…` value once.
 
-The API key and webhook secret stay in the Magento admin. They are not sent to the browser.
+Only the API key is pasted into Magento. It stays on the server and is never sent to the browser.
 
 ## Install
 
@@ -28,12 +28,12 @@ The project `composer.json` needs `"minimum-stability": "dev"` and `"prefer-stab
 In **Stores → Configuration → Sales → Payment Methods → Voybit**:
 
 1. Enable the method.
-2. Paste the API key, webhook secret, and asset ID.
-3. Copy the webhook URL and the customer return URL shown there.
+2. Paste the gateway-scoped API key.
+3. Make sure the Magento store URL uses HTTPS.
 
-On the gateway in the Voybit dashboard, paste those two URLs. Both have to be HTTPS. The webhook path is `/voybit/webhook/index`. The return path is `/voybit/payment/complete`.
+On the first checkout, the module registers its webhook and customer return URL with Voybit and stores the rotated signing secret encrypted. No asset ID or webhook secret is entered manually.
 
-The order total is the amount the customer pays, in the store currency. A 25.00 order asks for 25.00 of the selected asset. Use a stablecoin that matches the store currency, such as USDT for a USD store.
+The module sends only the order total and currency. Voybit then shows the assets enabled on that gateway. The customer chooses one, reviews the live crypto conversion, and confirms before an address and QR code are created.
 
 Placing the order opens Voybit checkout. The order stays unpaid until a signed webhook says `paid` or `overpaid`. The module then creates an offline invoice. A repeated delivery is ignored. The return page does not mark the order paid.
 

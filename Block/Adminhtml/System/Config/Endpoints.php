@@ -36,7 +36,7 @@ class Endpoints extends Field
             . $this->escapeHtml($webhook) . '</code></div><div style="margin-top:8px"><strong>'
             . $this->escapeHtml((string) __('Customer return')) . '</strong><br/><code>'
             . $this->escapeHtml($complete) . '</code></div><p class="note">'
-            . $this->escapeHtml((string) __('Paste both into the gateway in the Voybit dashboard. Both need to be HTTPS.'))
+            . $this->escapeHtml((string) __('Voybit registers both HTTPS URLs automatically the first time checkout starts. The signing secret is stored encrypted and is not shown here.'))
             . '</p>';
     }
 }

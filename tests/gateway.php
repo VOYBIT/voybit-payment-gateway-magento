@@ -31,15 +31,14 @@ function fails(callable $fn): bool
 }
 
 $usd = OrderAmount::from('25.0000', 'usd');
-expect($usd['amount_minor'] === 2500, 'usd minor');
-expect($usd['crypto_amount'] === '25.00', 'usd crypto');
+expect($usd['fiat_amount'] === '25.00', 'usd amount');
 expect($usd['fiat_currency'] === 'USD', 'usd code');
 
 $yen = OrderAmount::from('25.000', 'JPY');
-expect($yen['amount_minor'] === 25 && $yen['crypto_amount'] === '25', 'jpy');
+expect($yen['fiat_amount'] === '25', 'jpy');
 
 $dinar = OrderAmount::from('1.234', 'BHD');
-expect($dinar['amount_minor'] === 1234 && $dinar['crypto_amount'] === '1.234', 'bhd');
+expect($dinar['fiat_amount'] === '1.234', 'bhd');
 
 expect(fails(static fn () => OrderAmount::from('25.501', 'USD')), 'extra usd digit');
 expect(fails(static fn () => OrderAmount::from('0.00', 'USD')), 'zero');
@@ -62,6 +61,11 @@ expect(WebhookDecision::forEvent(['status' => 'pending', 'public_id' => $id], $l
 expect(WebhookDecision::forEvent(['status' => 'paid', 'public_id' => $id], null) === WebhookDecision::RETRY, 'missing');
 expect(WebhookDecision::forEvent(['status' => 'paid', 'public_id' => $id], $link) === WebhookDecision::FULFIL, 'paid');
 expect(WebhookDecision::forEvent(['status' => 'overpaid', 'public_id' => $id], $link) === WebhookDecision::FULFIL, 'overpaid');
+expect(WebhookDecision::forEvent([
+    'status' => 'paid',
+    'public_id' => 'x12345678901234567890x',
+    'checkout_public_id' => $id,
+], $link) === WebhookDecision::FULFIL, 'hosted checkout public id');
 expect(WebhookDecision::forEvent(['status' => 'paid', 'public_id' => 'short'], $link) === WebhookDecision::REJECT, 'mismatch');
 
 echo "magento gateway ok\n";
